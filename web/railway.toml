@@ -1,0 +1,14 @@
+# author: Just Ship It
+# project: screenshot-to-code-railway
+# purpose: Railway deployment and health-check configuration for the public UI.
+# used_by: Railway Web service
+# status: active
+# verified: pending
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/healthz"
+healthcheckTimeout = 180
+restartPolicyType = "ON_FAILURE"

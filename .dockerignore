@@ -1,0 +1,10 @@
+# author: Just Ship It
+# project: screenshot-to-code-railway
+# purpose: Keep Railway source deploys small and deterministic.
+# used_by: Railway Docker builds
+# status: active
+# verified: pending
+.git
+.github
+README.md
+.env.example

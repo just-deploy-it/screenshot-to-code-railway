@@ -1,0 +1,48 @@
+# author: Just Ship It
+# project: screenshot-to-code-railway
+# purpose: Clean-build the wrapper and propose pinned upstream updates.
+# used_by: GitHub Actions
+# status: active
+# verified: pending
+name: Verify and track upstream
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web
+      - run: docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
+      - run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+  update-upstream:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: upstream
+        run: git ls-remote https://github.com/abi/screenshot-to-code.git refs/heads/main | cut -f1 > /tmp/upstream-sha && printf 'sha=%s\n' "$(cat /tmp/upstream-sha)" >> "$GITHUB_OUTPUT"
+      - if: steps.upstream.outputs.sha != ''
+        env:
+          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
+        run: perl -pi -e "s/d026163f586dfa8c5c10d28c36edd59a9d3b0e88/$ENV{UPSTREAM_SHA}/g" README.md web/Dockerfile backend/Dockerfile
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: 'chore: update pinned screenshot-to-code upstream'
+          title: 'chore: update pinned screenshot-to-code upstream'
+          body: 'Automated pin update after clean image builds. Review upstream changes before merge.'
+          branch: chore/update-upstream
+          delete-branch: true

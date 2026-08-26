@@ -1,0 +1,22 @@
+# author: Just Ship It
+# project: screenshot-to-code-railway
+# purpose: Public authenticated static UI and allowlisted private backend proxy.
+# used_by: Railway Web service
+# status: active
+# verified: pending
+:{$PORT} {
+    handle /healthz {
+        respond "ok" 200
+    }
+
+    basic_auth {
+        admin {$BASIC_AUTH_HASH}
+    }
+
+    @backend path /api/* /generate-code /local-assets/* /models /eval-* /evals* /run_evals* /openai-input-compare /output_folders /best-of-n-evals /agent-runs*
+    reverse_proxy @backend {$BACKEND_HOST}:{$BACKEND_PORT}
+
+    root * /usr/share/caddy
+    try_files {path} /index.html
+    file_server
+}
