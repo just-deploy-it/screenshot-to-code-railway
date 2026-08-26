@@ -8,7 +8,8 @@ FROM python:3.12.3-slim-bookworm@sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005
 
 ARG UPSTREAM_COMMIT=d026163f586dfa8c5c10d28c36edd59a9d3b0e88
 ENV POETRY_VERSION=1.8.0 \
-    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_VIRTUALENVS_CREATE=true \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/* \
@@ -21,4 +22,4 @@ ENV SCREENSHOT_TO_CODE_DATA_DIR=/data \
     LOCAL_ASSET_DIR=/data/local_assets \
     BACKEND_PORT=7001
 EXPOSE 7001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7001"]
+CMD ["/app/backend/.venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7001"]
