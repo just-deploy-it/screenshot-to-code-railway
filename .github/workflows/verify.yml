@@ -15,14 +15,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: ./scripts/test-upstream.sh d026163f586dfa8c5c10d28c36edd59a9d3b0e88
       - run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web
       - run: docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
       - run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
@@ -31,18 +31,32 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - id: upstream
         run: git ls-remote https://github.com/abi/screenshot-to-code.git refs/heads/main | cut -f1 > /tmp/upstream-sha && printf 'sha=%s\n' "$(cat /tmp/upstream-sha)" >> "$GITHUB_OUTPUT"
       - if: steps.upstream.outputs.sha != ''
         env:
           UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
         run: perl -pi -e "s/d026163f586dfa8c5c10d28c36edd59a9d3b0e88/$ENV{UPSTREAM_SHA}/g" README.md web/Dockerfile backend/Dockerfile
-      - uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: 'chore: update pinned screenshot-to-code upstream'
-          title: 'chore: update pinned screenshot-to-code upstream'
-          body: 'Automated pin update after clean image builds. Review upstream changes before merge.'
-          branch: chore/update-upstream
-          delete-branch: true
+      - if: steps.upstream.outputs.sha != ''
+        env:
+          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
+        run: ./scripts/test-upstream.sh "$UPSTREAM_SHA"
+      - if: steps.upstream.outputs.sha != ''
+        run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web && docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
+      - if: steps.upstream.outputs.sha != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'just-deploy-it-bot'
+          git config user.email 'just-deploy-it-bot@users.noreply.github.com'
+          git switch -C chore/update-upstream
+          git add README.md web/Dockerfile backend/Dockerfile
+          git commit -m 'chore: update pinned screenshot-to-code upstream'
+          git push --force origin chore/update-upstream
+          gh pr create --base main --head chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.' || gh pr edit chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.'

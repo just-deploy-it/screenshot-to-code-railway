@@ -1,0 +1,11 @@
+--- a/backend/routes/generate_code.py
++++ b/backend/routes/generate_code.py
+@@ -679,4 +679,7 @@
+     pipeline.use(PostProcessingMiddleware())
+ 
+     # Execute the pipeline
+-    await pipeline.execute(websocket)
++    try:
++        await pipeline.execute(websocket)
++    except WebSocketDisconnect:
++        pass

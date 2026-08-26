@@ -21,8 +21,12 @@ Provider keys are intentionally not included. Configure a supported model provid
 
 ## Verification
 
-`docker build -f web/Dockerfile web` and `docker build -f backend/Dockerfile backend` are the local clean-build checks. Railway deploys must pass `/healthz` on Web and Backend `/` before template creation.
+`docker build -f web/Dockerfile web` and `docker build -f backend/Dockerfile backend` are the local clean-build checks. `scripts/test-upstream.sh d026163f586dfa8c5c10d28c36edd59a9d3b0e88` runs the pinned upstream backend and frontend test suites. Railway deploys must pass `/healthz` on Web and Backend `/` before template creation.
 
 ## Upstream updates
 
-The wrapper pins an immutable upstream commit. Update the commit only after both clean Docker builds and upstream tests pass. Do not move to a mutable tag.
+The wrapper pins an immutable upstream commit. The scheduled updater tests the candidate commit and rebuilds both images before opening a pull request. Do not move to a mutable tag.
+
+## License notices
+
+This wrapper is MIT licensed in [LICENSE](LICENSE). [NOTICE](NOTICE) preserves the upstream Screenshot to Code MIT copyright and permission notice. The final Web image also includes that notice at `/usr/share/caddy/NOTICE` alongside the compiled upstream assets.

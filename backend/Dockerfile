@@ -15,7 +15,8 @@ ENV POETRY_VERSION=1.8.0 \
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "poetry==$POETRY_VERSION"
 WORKDIR /app
-RUN git clone https://github.com/abi/screenshot-to-code.git . && git checkout "$UPSTREAM_COMMIT"
+COPY websocket-disconnect.patch /tmp/websocket-disconnect.patch
+RUN git clone https://github.com/abi/screenshot-to-code.git . && git checkout "$UPSTREAM_COMMIT" && git apply /tmp/websocket-disconnect.patch
 WORKDIR /app/backend
 RUN poetry install --only main --no-interaction --no-ansi && .venv/bin/playwright install --with-deps chromium
 ENV SCREENSHOT_TO_CODE_DATA_DIR=/data \
