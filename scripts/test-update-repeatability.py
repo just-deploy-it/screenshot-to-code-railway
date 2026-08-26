@@ -55,6 +55,8 @@ class UpstreamUpdateTests(unittest.TestCase):
                 text = (checkout / name).read_text(encoding="utf-8")
                 self.assertIn(second, text, name)
                 self.assertNotIn(first, text, name)
+            for name in ("web/Dockerfile", "backend/Dockerfile"):
+                self.assertIn(f"ARG UPSTREAM_COMMIT={second}", (checkout / name).read_text(encoding="utf-8"), name)
 
     def test_workflow_derives_and_updates_the_current_pin(self):
         workflow = (ROOT / ".github/workflows/verify.yml").read_text(encoding="utf-8")
