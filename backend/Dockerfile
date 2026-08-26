@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ca-certific
 WORKDIR /app
 RUN git clone https://github.com/abi/screenshot-to-code.git . && git checkout "$UPSTREAM_COMMIT"
 WORKDIR /app/backend
-RUN poetry install --only main --no-interaction --no-ansi && playwright install --with-deps chromium
+RUN poetry install --only main --no-interaction --no-ansi && .venv/bin/playwright install --with-deps chromium
 ENV SCREENSHOT_TO_CODE_DATA_DIR=/data \
     LOCAL_ASSET_DIR=/data/local_assets \
     BACKEND_PORT=7001
