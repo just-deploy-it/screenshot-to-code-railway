@@ -46,11 +46,17 @@ jobs:
           UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
         run: python3 scripts/set-upstream.py "$UPSTREAM_SHA"
       - if: steps.upstream.outputs.sha != ''
+        run: python3 scripts/test-update-repeatability.py
+      - if: steps.upstream.outputs.sha != ''
         env:
           UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
         run: ./scripts/test-upstream.sh "$UPSTREAM_SHA"
       - if: steps.upstream.outputs.sha != ''
         run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web && docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
+      - if: steps.upstream.outputs.sha != ''
+        run: docker run --rm --entrypoint caddy screenshot-to-code-web fmt --diff /etc/caddy/Caddyfile
+      - if: steps.upstream.outputs.sha != ''
+        run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
       - if: steps.upstream.outputs.sha != ''
         run: |
           if git diff --quiet; then exit 0; fi

@@ -71,6 +71,21 @@ class UpstreamUpdateTests(unittest.TestCase):
         self.assertNotIn("gh pr create", workflow)
         self.assertNotIn("gh pr edit", workflow)
 
+    def test_candidate_passes_every_gate_before_main_is_updated(self):
+        workflow = (ROOT / ".github/workflows/verify.yml").read_text(encoding="utf-8")
+        updater = workflow.split("  update-upstream:\n", 1)[1]
+        before_commit = updater.split("git commit -m", 1)[0]
+
+        for gate in (
+            "python3 scripts/test-update-repeatability.py",
+            './scripts/test-upstream.sh "$UPSTREAM_SHA"',
+            "docker build --pull -t screenshot-to-code-web",
+            "docker build --pull -t screenshot-to-code-backend",
+            "caddy screenshot-to-code-web fmt --diff",
+            "caddy -e PORT=8080",
+        ):
+            self.assertIn(gate, before_commit)
+
 
 if __name__ == "__main__":
     unittest.main()
