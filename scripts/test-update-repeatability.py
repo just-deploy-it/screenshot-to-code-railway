@@ -60,6 +60,7 @@ class UpstreamUpdateTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/verify.yml").read_text(encoding="utf-8")
 
         self.assertNotIn("d026163f586dfa8c5c10d28c36edd59a9d3b0e88", workflow)
+        self.assertEqual(2, workflow.count("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"))
         self.assertIn("set-upstream.py --current", workflow)
         self.assertIn("test-update-repeatability.py", workflow)
         self.assertIn('set-upstream.py "$UPSTREAM_SHA"', workflow)

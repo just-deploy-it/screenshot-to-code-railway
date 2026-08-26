@@ -21,7 +21,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - id: pin
         run: printf 'sha=%s\n' "$(python3 scripts/set-upstream.py --current)" >> "$GITHUB_OUTPUT"
       - run: python3 scripts/test-update-repeatability.py
@@ -39,7 +39,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - id: upstream
         run: git ls-remote https://github.com/abi/screenshot-to-code.git refs/heads/main | cut -f1 > /tmp/upstream-sha && printf 'sha=%s\n' "$(cat /tmp/upstream-sha)" >> "$GITHUB_OUTPUT"
       - if: steps.upstream.outputs.sha != ''
