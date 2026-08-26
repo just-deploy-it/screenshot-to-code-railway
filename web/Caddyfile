@@ -5,20 +5,20 @@
 # status: active
 # verified: pending
 :{$PORT} {
-    route {
-        handle /healthz {
-            respond "ok" 200
-        }
+	route {
+		handle /healthz {
+			respond "ok" 200
+		}
 
-        basic_auth {
-            admin {$BASIC_AUTH_HASH}
-        }
+		basic_auth {
+			admin {$BASIC_AUTH_HASH}
+		}
 
-        @backend path /api/* /generate-code /local-assets/* /models /eval-* /evals* /run_evals* /openai-input-compare /output_folders /best-of-n-evals /agent-runs*
-        reverse_proxy @backend {$BACKEND_HOST}:{$BACKEND_PORT}
+		@backend path /api/* /generate-code /local-assets/* /models /eval-* /evals* /run_evals* /openai-input-compare /output_folders /best-of-n-evals /agent-runs*
+		reverse_proxy @backend {$BACKEND_HOST}:{$BACKEND_PORT}
 
-        root * /usr/share/caddy
-        try_files {path} /index.html
-        file_server
-    }
+		root * /usr/share/caddy
+		try_files {path} /index.html
+		file_server
+	}
 }

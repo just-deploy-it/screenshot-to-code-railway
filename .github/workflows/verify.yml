@@ -22,9 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - run: ./scripts/test-upstream.sh d026163f586dfa8c5c10d28c36edd59a9d3b0e88
+      - id: pin
+        run: printf 'sha=%s\n' "$(python3 scripts/set-upstream.py --current)" >> "$GITHUB_OUTPUT"
+      - run: python3 scripts/test-update-repeatability.py
+      - run: ./scripts/test-upstream.sh "${{ steps.pin.outputs.sha }}"
       - run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web
       - run: docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
+      - run: docker run --rm --entrypoint caddy screenshot-to-code-web fmt --diff /etc/caddy/Caddyfile
       - run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
   update-upstream:
@@ -41,7 +45,7 @@ jobs:
       - if: steps.upstream.outputs.sha != ''
         env:
           UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
-        run: perl -pi -e "s/d026163f586dfa8c5c10d28c36edd59a9d3b0e88/$ENV{UPSTREAM_SHA}/g" README.md web/Dockerfile backend/Dockerfile
+        run: python3 scripts/set-upstream.py "$UPSTREAM_SHA"
       - if: steps.upstream.outputs.sha != ''
         env:
           UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
@@ -56,7 +60,7 @@ jobs:
           git config user.name 'just-deploy-it-bot'
           git config user.email 'just-deploy-it-bot@users.noreply.github.com'
           git switch -C chore/update-upstream
-          git add README.md web/Dockerfile backend/Dockerfile
+          git add README.md NOTICE web/NOTICE web/Dockerfile backend/Dockerfile
           git commit -m 'chore: update pinned screenshot-to-code upstream'
           git push --force origin chore/update-upstream
           gh pr create --base main --head chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.' || gh pr edit chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.'
