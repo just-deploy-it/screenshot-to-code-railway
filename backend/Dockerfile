@@ -21,4 +21,4 @@ ENV SCREENSHOT_TO_CODE_DATA_DIR=/data \
     LOCAL_ASSET_DIR=/data/local_assets \
     BACKEND_PORT=7001
 EXPOSE 7001
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7001"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7001"]
