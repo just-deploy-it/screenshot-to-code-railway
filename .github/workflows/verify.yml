@@ -1,6 +1,6 @@
 # author: Just Ship It
 # project: screenshot-to-code-railway
-# purpose: Clean-build the wrapper and propose pinned upstream updates.
+# purpose: Clean-build the wrapper and apply verified pinned upstream updates.
 # used_by: GitHub Actions
 # status: active
 # verified: pending
@@ -37,7 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - id: upstream
@@ -53,14 +52,10 @@ jobs:
       - if: steps.upstream.outputs.sha != ''
         run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web && docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
       - if: steps.upstream.outputs.sha != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet; then exit 0; fi
           git config user.name 'just-deploy-it-bot'
           git config user.email 'just-deploy-it-bot@users.noreply.github.com'
-          git switch -C chore/update-upstream
           git add README.md NOTICE web/NOTICE web/Dockerfile backend/Dockerfile
           git commit -m 'chore: update pinned screenshot-to-code upstream'
-          git push --force origin chore/update-upstream
-          gh pr create --base main --head chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.' || gh pr edit chore/update-upstream --title 'chore: update pinned screenshot-to-code upstream' --body 'Automated pin update after upstream tests and clean image builds. Review upstream changes before merge.'
+          git push origin HEAD:main

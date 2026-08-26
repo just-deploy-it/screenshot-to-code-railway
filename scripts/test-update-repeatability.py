@@ -67,6 +67,9 @@ class UpstreamUpdateTests(unittest.TestCase):
         self.assertIn("test-update-repeatability.py", workflow)
         self.assertIn('set-upstream.py "$UPSTREAM_SHA"', workflow)
         self.assertIn("git add README.md NOTICE web/NOTICE web/Dockerfile backend/Dockerfile", workflow)
+        self.assertIn("git push origin HEAD:main", workflow)
+        self.assertNotIn("gh pr create", workflow)
+        self.assertNotIn("gh pr edit", workflow)
 
 
 if __name__ == "__main__":
