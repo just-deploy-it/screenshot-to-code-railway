@@ -12,16 +12,15 @@ trap 'rm -rf "$workdir"' EXIT
 
 git clone --depth 1 --branch main https://github.com/abi/screenshot-to-code.git "$workdir/source"
 
-python3 -m pip install --disable-pip-version-check --no-cache-dir 'poetry==1.8.0'
+python3 -m venv "$workdir/poetry-runner"
+"$workdir/poetry-runner/bin/python" -m pip install --disable-pip-version-check --no-cache-dir 'poetry==1.8.0'
 (
   cd "$workdir/source/backend"
-  poetry install --with dev --no-interaction --no-ansi
-  poetry run pytest
+  "$workdir/poetry-runner/bin/poetry" install --with dev --no-interaction --no-ansi
+  "$workdir/poetry-runner/bin/poetry" run pytest
 )
 (
   cd "$workdir/source/frontend"
-  corepack enable
-  corepack prepare pnpm@10.32.1 --activate
-  pnpm install --frozen-lockfile
-  pnpm exec jest --passWithNoTests --runInBand
+  npx --yes pnpm@10.32.1 install --frozen-lockfile
+  npx --yes pnpm@10.32.1 exec jest --passWithNoTests --runInBand
 )

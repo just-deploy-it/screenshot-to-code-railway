@@ -33,6 +33,8 @@ def main() -> int:
             errors.append(f"{label} must not hide upstream tracking behind a cacheable clone layer")
         if "UPSTREAM_COMMIT" in content:
             errors.append(f"{label} must not declare an upstream commit pin")
+        if "pinned upstream" in content.lower():
+            errors.append(f"{label} provenance must not claim the moving source is pinned")
         if re.search(r"\b[0-9a-f]{40}\b", content):
             errors.append(f"{label} must not contain a 40-character upstream commit")
 
@@ -57,6 +59,22 @@ def main() -> int:
     for forbidden in ("pinned upstream", "immutable upstream commit", "automated updater"):
         if forbidden in readme:
             errors.append(f"README must not claim {forbidden}")
+
+    upstream_test = (ROOT / "scripts/test-upstream.sh").read_text(encoding="utf-8")
+    if "python3 -m pip install" in upstream_test:
+        errors.append("upstream tests must not require pip in the system Python")
+    if "corepack" in upstream_test:
+        errors.append("upstream tests must not require a system Corepack installation")
+    for required in (
+        'python3 -m venv "$workdir/poetry-runner"',
+        '"$workdir/poetry-runner/bin/python" -m pip install',
+        '"$workdir/poetry-runner/bin/poetry" install',
+        '"$workdir/poetry-runner/bin/poetry" run pytest',
+        "npx --yes pnpm@10.32.1 install --frozen-lockfile",
+        "npx --yes pnpm@10.32.1 exec jest --passWithNoTests --runInBand",
+    ):
+        if required not in upstream_test:
+            errors.append(f"upstream tests must contain {required}")
 
     if errors:
         raise SystemExit("\n".join(errors))
