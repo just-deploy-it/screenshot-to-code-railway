@@ -1,10 +1,10 @@
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
-# purpose: Clean-build the wrapper and apply verified pinned upstream updates.
+# purpose: Clean-build the wrapper against the latest upstream main branch.
 # used_by: GitHub Actions
 # status: active
 # verified: pending
-name: Verify and track upstream
+name: Verify latest upstream main
 
 on:
   push:
@@ -22,46 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - id: pin
-        run: printf 'sha=%s\n' "$(python3 scripts/set-upstream.py --current)" >> "$GITHUB_OUTPUT"
-      - run: python3 scripts/test-update-repeatability.py
-      - run: ./scripts/test-upstream.sh "${{ steps.pin.outputs.sha }}"
+        with:
+          persist-credentials: false
+      - run: python3 scripts/test-tracking-policy.py
+      - run: ./scripts/test-upstream.sh
       - run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web
       - run: docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
       - run: docker run --rm --entrypoint caddy screenshot-to-code-web fmt --diff /etc/caddy/Caddyfile
       - run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
-
-  update-upstream:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    needs: verify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - id: upstream
-        run: git ls-remote https://github.com/abi/screenshot-to-code.git refs/heads/main | cut -f1 > /tmp/upstream-sha && printf 'sha=%s\n' "$(cat /tmp/upstream-sha)" >> "$GITHUB_OUTPUT"
-      - if: steps.upstream.outputs.sha != ''
-        env:
-          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
-        run: python3 scripts/set-upstream.py "$UPSTREAM_SHA"
-      - if: steps.upstream.outputs.sha != ''
-        run: python3 scripts/test-update-repeatability.py
-      - if: steps.upstream.outputs.sha != ''
-        env:
-          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
-        run: ./scripts/test-upstream.sh "$UPSTREAM_SHA"
-      - if: steps.upstream.outputs.sha != ''
-        run: docker build --pull -t screenshot-to-code-web -f web/Dockerfile web && docker build --pull -t screenshot-to-code-backend -f backend/Dockerfile backend
-      - if: steps.upstream.outputs.sha != ''
-        run: docker run --rm --entrypoint caddy screenshot-to-code-web fmt --diff /etc/caddy/Caddyfile
-      - if: steps.upstream.outputs.sha != ''
-        run: docker run --rm --entrypoint caddy -e PORT=8080 -e BACKEND_HOST=backend -e BACKEND_PORT=7001 -e BASIC_AUTH_HASH='$2a$14$XQSw47TaSxw1mP7rNXld7.TB1GHjeB.EwWg1yA1fDW0NPTzCZYmcO' screenshot-to-code-web validate --config /etc/caddy/Caddyfile --adapter caddyfile
-      - if: steps.upstream.outputs.sha != ''
-        run: |
-          if git diff --quiet; then exit 0; fi
-          git config user.name 'just-deploy-it-bot'
-          git config user.email 'just-deploy-it-bot@users.noreply.github.com'
-          git add README.md NOTICE web/NOTICE web/Dockerfile backend/Dockerfile
-          git commit -m 'chore: update pinned screenshot-to-code upstream'
-          git push origin HEAD:main
