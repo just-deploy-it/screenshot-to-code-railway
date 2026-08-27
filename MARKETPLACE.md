@@ -42,7 +42,7 @@ Code generation requires at least one supported provider key, such as OpenAI, An
 
 See demos, generated examples and supported workflows at [screenshottocode.com](https://screenshottocode.com). The MIT-licensed source is available at [abi/screenshot-to-code](https://github.com/abi/screenshot-to-code).
 
-This independent Just Ship It wrapper keeps every deployment reproducible with an immutable upstream commit. A scheduled updater checks the newest upstream revision, runs upstream tests, builds both images and applies the new pin automatically only when every check passes.
+This independent Just Deploy It wrapper keeps every deployment reproducible with an immutable upstream commit. A scheduled updater checks the newest upstream revision, runs upstream tests, builds both images and applies the new pin automatically only when every check passes.
 
 ## Important Notes
 

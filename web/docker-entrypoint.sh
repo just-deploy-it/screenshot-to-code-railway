@@ -1,5 +1,5 @@
 #!/bin/sh
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Derive the runtime-only Caddy Basic Auth hash from a Railway secret.
 # used_by: Railway Web service

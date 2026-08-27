@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Read or atomically advance every declared immutable upstream pin.
 # used_by: GitHub Actions updater and repeatability test

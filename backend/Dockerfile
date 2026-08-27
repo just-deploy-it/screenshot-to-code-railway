@@ -1,4 +1,4 @@
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Build the pinned upstream FastAPI and Playwright backend.
 # used_by: Railway Backend service

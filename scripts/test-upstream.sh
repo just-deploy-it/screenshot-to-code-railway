@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Run the pinned upstream backend and frontend test suites.
 # used_by: GitHub Actions update verification

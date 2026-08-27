@@ -1,4 +1,4 @@
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Railway deployment and health-check configuration for the private API.
 # used_by: Railway Backend service

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Prove upstream pin updates remain repeatable after the first update.
 # used_by: GitHub Actions verification

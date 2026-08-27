@@ -1,4 +1,4 @@
-# author: Just Ship It
+# author: Just Deploy It
 # project: screenshot-to-code-railway
 # purpose: Build pinned upstream frontend and serve it behind authenticated Caddy.
 # used_by: Railway Web service
