@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 # author: Just Deploy It
 # project: screenshot-to-code-railway
-# purpose: Run the pinned upstream backend and frontend test suites.
-# used_by: GitHub Actions update verification
+# purpose: Run the latest upstream main backend and frontend test suites.
+# used_by: GitHub Actions compatibility verification
 # status: active
 # verified: pending
 set -euo pipefail
 
-upstream_commit=${1:?pass an immutable upstream commit}
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
 
-git clone https://github.com/abi/screenshot-to-code.git "$workdir/source"
-git -C "$workdir/source" checkout --detach "$upstream_commit"
+git clone --depth 1 --branch main https://github.com/abi/screenshot-to-code.git "$workdir/source"
 
 python3 -m pip install --disable-pip-version-check --no-cache-dir 'poetry==1.8.0'
 (

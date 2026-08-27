@@ -1,11 +1,11 @@
 # Screenshot to Code on Railway
 
-Minimal Railway wrapper for [abi/screenshot-to-code](https://github.com/abi/screenshot-to-code) at `d026163f586dfa8c5c10d28c36edd59a9d3b0e88`.
+Minimal Railway wrapper for the latest `main` branch of [abi/screenshot-to-code](https://github.com/abi/screenshot-to-code).
 
 ## Architecture
 
-- `Web` builds the pinned pnpm frontend and serves it with Caddy.
-- `Backend` runs the pinned FastAPI application and Playwright Chromium.
+- `Web` builds the latest upstream pnpm frontend and serves it with Caddy.
+- `Backend` runs the latest upstream FastAPI application and Playwright Chromium.
 - Web is the sole public service. It provides Basic Auth and routes only core API, WebSocket and local asset paths to Backend over Railway private networking.
 - Backend mounts `/data`. Design systems and local assets live there.
 
@@ -21,11 +21,11 @@ Provider keys are intentionally not included. Configure a supported model provid
 
 ## Verification
 
-`docker build -f web/Dockerfile web` and `docker build -f backend/Dockerfile backend` are the local clean-build checks. `scripts/test-upstream.sh d026163f586dfa8c5c10d28c36edd59a9d3b0e88` runs the pinned upstream backend and frontend test suites. Railway deploys must pass `/healthz` on Web and Backend `/` before template creation.
+`docker build -f web/Dockerfile web` and `docker build -f backend/Dockerfile backend` are the local clean-build checks. `scripts/test-upstream.sh` runs the latest upstream `main` backend and frontend test suites. Railway deploys must pass `/healthz` on Web and Backend `/` before template creation.
 
 ## Upstream updates
 
-The wrapper pins an immutable upstream commit. The scheduled updater tests the candidate commit and rebuilds both images before opening a pull request. Do not move to a mutable tag.
+Every image build downloads and unpacks the moving upstream `main` source archive. Redeploy the Railway template to build the current upstream code. Scheduled CI reruns the upstream tests and both clean image builds so compatibility breakage is detected without a manual commit, version, tag or digest update.
 
 ## License notices
 
